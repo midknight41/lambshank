@@ -5,7 +5,4 @@
 
 [![NPM](https://nodei.co/npm/lambshank.png?downloads=true)](https://www.npmjs.com/package/lambshank/)
 
-## TODO
-
-- setup coveralls
-- replace coveralls token
+Extremely experimental and not proven to work yet. :)
