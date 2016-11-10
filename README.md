@@ -7,11 +7,5 @@
 
 ## TODO
 
-- setup travis
 - setup coveralls
 - replace coveralls token
-- setup dep checks
-- update badges
-- rename sln and nproj
-- alter sln to reference new nproj
-
