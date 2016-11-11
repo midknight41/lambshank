@@ -39,7 +39,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "^2.6.15",
+    "aws-sdk": "2.6.15",
     "check-verify": "^0.3.0",
     "lab-testing": "^0.0.2",
     "nconf": "^0.8.4",
