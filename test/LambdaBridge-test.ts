@@ -12,13 +12,13 @@ import LambdaContext from "./Mocks/LambdaContext";
 
 const lab = exports.lab = Lab.script();
 const { expect, fail } = Code;
-const helper = getHelper(lab);
+const testing = getHelper(lab);
 
-const method = helper.createExperiment("Lambshank", "LambdaBridge");
+const method = testing.createExperiment("Lambshank", "LambdaBridge");
 const fileName = "./test/data/config.json";
 
 method("The constructor", () => {
-  helper.standardContructorTest(LambdaBridge, ["eventName", "broker"], "event1", new Broker());
+  testing.standardContructorTest(LambdaBridge, ["eventName", "broker"], "event1", new Broker());
 });
 
 method("The handler() method", () => {
@@ -29,7 +29,7 @@ method("The handler() method", () => {
   let broker = new Broker();
   let bridge = new LambdaBridge("event1", broker);
 
-  helper.methodParameterTest(bridge, bridge.handler, ["eventPayload", "context"], payload, new LambdaContext());
+  testing.throws.methodParameterTest(bridge, bridge.handler, ["eventPayload", "context"], payload, new LambdaContext());
 
 });
 
