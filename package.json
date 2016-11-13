@@ -40,10 +40,10 @@
   "license": "MIT",
   "dependencies": {
     "aws-sdk": "2.6.15",
-    "check-verify": "^0.3.0",
+    "check-verify": "^0.4.0",
+    "lodash": "^4.16.4",
     "nconf": "^0.8.4",
-    "q": "^1.4.1",
-    "lodash": "^4.16.4"
+    "q": "^1.4.1"
   },
   "devDependencies": {
     "code": "^4.0.0",
