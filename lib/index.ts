@@ -1,9 +1,14 @@
 import getConfig from "./ConfigManager";
 import { CoreFramework } from "./CoreFramework";
+import { thrower } from "check-verify";
 
-export function getCoreComponents(configFilename: string) {
+export function getCoreComponents(fileName: string) {
 
-  const config = getConfig(configFilename);
+  thrower({ fileName })
+    .check("fileName").is.a.string();
+
+  const config = getConfig(fileName);
+
   return new CoreFramework(config);
 
 }

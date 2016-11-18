@@ -1,4 +1,4 @@
-﻿declare module "code" {
+declare module "code" {
 
   const expect: (target: any, prefix?: string) => Expect;
   const fail: (message: string) => void;

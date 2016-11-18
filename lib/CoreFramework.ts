@@ -1,20 +1,28 @@
 ﻿import Activator from "./Activator";
 import AwsBroker from "./AwsBroker";
 import ConsoleLogger from "./ConsoleLogger";
+import getConfig from "./ConfigManager";
+
 // import getContainer from "./Depender";
 import ExecutionContextFactory from "./ExecutionContextFactory";
 import Task from "./Task";
 import LoggingGroup from "./LoggingGroup";
 import { LambdaBridge } from "./LambdaBridge";
+import { thrower } from "check-verify";
 
 import { IAppConfig, ILogger, IBroker, IHandler, ITask } from "./Interfaces";
 import * as AWS from "aws-sdk";
 
 let singleton = null;
 
-export default function getCoreComponents(config: IAppConfig): CoreFramework {
+export default function getCoreComponents(configFile: string): CoreFramework {
 
   if (singleton) return singleton;
+
+  thrower({ configFile })
+    .check("configFile").is.a.string();
+
+  const config = getConfig(configFile);
 
   singleton = new CoreFramework(config);
   return singleton;
@@ -36,6 +44,10 @@ export class CoreFramework {
   private activator: Activator;
 
   constructor(config: IAppConfig) {
+
+    thrower(config)
+      .check("sns.topicRoot").is.a.string();
+
     this.config = config;
 
     this.registerCoreComponents_();
@@ -88,11 +100,11 @@ export class CoreFramework {
 
   public listen() {
 
-  /*
-    getIoC().registerIndex({
-      "Broker": this.broker
-    });
-  */
+    /*
+      getIoC().registerIndex({
+        "Broker": this.broker
+      });
+    */
 
   }
 

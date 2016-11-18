@@ -1,4 +1,4 @@
-﻿declare module "lab" {
+declare module "lab" {
 
   function script(): Lab;
   
