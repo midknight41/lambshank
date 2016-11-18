@@ -1,0 +1,5 @@
+{
+  "sns": {
+    "topicRoot": "arn:aws:sns:eu-west-1:AABBCCDD"
+  }
+}
