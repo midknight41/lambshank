@@ -33,12 +33,13 @@ export class Lambda {
   public endpoint = null;
 
   constructor() {
+    return;
   }
 
 }
 
 function stub() {
-  return function () { };
+  return function () { return; };
 }
 
 export class SNS {
@@ -48,5 +49,6 @@ export class SNS {
   public endpoint = null;
 
   constructor() {
+    return;
   }
 }

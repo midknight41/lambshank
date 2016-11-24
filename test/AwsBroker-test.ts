@@ -54,8 +54,8 @@ method("broadcast", () => {
     const msg = { url: "http://www.chadmacey.co.uk" };
     const taskName = "Task-For-Test";
     const expected = {
-      Message: '"eyJ1cmwiOiJodHRwOi8vd3d3LmNoYWRtYWNleS5jby51ayJ9"',
-      TopicArn: 'arn:aws:sns:eu-west-1:625894027313:Task-For-Test'
+      Message: "\"eyJ1cmwiOiJodHRwOi8vd3d3LmNoYWRtYWNleS5jby51ayJ9\"",
+      TopicArn: "arn:aws:sns:eu-west-1:625894027313:Task-For-Test"
     };
 
     const stub = sinon.stub(sns, "publish", (params, callback) => {
@@ -79,8 +79,8 @@ method("broadcast", () => {
     const msg = { url: "http://www.chadmacey.co.uk" };
     const taskName = "Task-For-Test";
     const expected = {
-      Message: '"eyJ1cmwiOiJodHRwOi8vd3d3LmNoYWRtYWNleS5jby51ayJ9"',
-      TopicArn: 'arn:aws:sns:eu-west-1:625894027313:Task-For-Test'
+      Message: "\"eyJ1cmwiOiJodHRwOi8vd3d3LmNoYWRtYWNleS5jby51ayJ9\"",
+      TopicArn: "arn:aws:sns:eu-west-1:625894027313:Task-For-Test"
     };
 
     const error = new Error("ERROR");

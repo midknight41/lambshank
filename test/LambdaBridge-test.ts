@@ -23,9 +23,9 @@ method("The constructor", () => {
 
 method("The handler() method", () => {
 
-    const payload = {
-      data: "hi"
-    };
+  const payload = {
+    data: "hi"
+  };
   let broker = new Broker();
   let bridge = new LambdaBridge("event1", broker);
 
