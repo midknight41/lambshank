@@ -37,12 +37,12 @@ export default class AwsBroker extends EventEmitter implements IBroker {
     const methodId = "AwsBroker.broadcast";
     this.logger.info(methodId, "broadcasting", { eventName, message });
 
-
     return promiser()
       .check("eventName").is.an.string()
       .check("message").is.an.object()
       .verify({ eventName, message })
       .then(() => this.sendToSns(eventName, message))
+      .then(() => Q.resolve({ success: true }))
       .catch((error: Error) => {
         this.logger.error(methodId, `broadcast failed`, { error, eventName });
         return Q.resolve({ success: false, message: error.message });

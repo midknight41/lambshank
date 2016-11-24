@@ -12,9 +12,9 @@ export default class Activator {
   constructor(broker: IBroker, logger: ILogger, contextFactory: ExecutionContextFactory) {
 
     thrower({ broker, logger, contextFactory })
-      .check("broker").is.a.object()
-      .check("logger").is.a.object()
-      .check("contextFactory").is.a.object();
+      .check("broker").is.an.object()
+      .check("logger").is.an.object()
+      .check("contextFactory").is.an.object();
 
     this.broker = broker;
     this.logger = logger;

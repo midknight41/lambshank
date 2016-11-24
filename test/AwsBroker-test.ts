@@ -1,13 +1,108 @@
-// import * as nodeunit from "nodeunit";
-// import * as Q from "q";
-// import * as MockAws from "../../Mocks/MockAws";
-// import AwsBroker from "../../../Core/AwsBroker";
-// import MockLogger from "../../Mocks/Logging";
-// import MongoDbMocker from "../../Mocks/MongoDB";
-// import ErrorRegistry from "../../../Core/ErrorRegistry";
+// Testing Framework
+import * as Code from "code";
+import * as Lab from "lab";
+import * as sinon from "sinon";
+import * as Q from "q";
+import getHelper from "lab-testing";
 
-// const Gently = require("gently");
-// const gently = new Gently();
+import AwsBroker from "../lib/AwsBroker";
+import * as MockAws from "./Mocks/MockAws";
+import MockLogger from "./Mocks/Logging";
+
+const lab = exports.lab = Lab.script();
+const expect = Code.expect;
+const helper = getHelper(lab);
+
+const method = helper.createExperiment("Lambshank", "AwsBroker");
+
+method("broadcast", () => {
+
+  const topicRoot = "arn:aws:sns:eu-west-1:625894027313";
+  const sns = new MockAws.SNS();
+  const lambda = new MockAws.Lambda();
+
+  const logger = new MockLogger();
+  const broker = new AwsBroker(sns, lambda, logger, topicRoot);
+
+  helper.standardContructorTest(AwsBroker, ["sns", "lambda", "logger", "topicRoot"], sns, lambda, logger, topicRoot);
+
+});
+
+method("broadcast", () => {
+
+  let topicRoot: string;
+  let sns: MockAws.SNS;
+  let lambda: MockAws.Lambda;
+
+  let logger: MockLogger;
+  let broker: AwsBroker;
+
+  lab.before(done => {
+
+    topicRoot = "arn:aws:sns:eu-west-1:625894027313";
+    sns = new MockAws.SNS();
+    lambda = new MockAws.Lambda();
+
+    logger = new MockLogger();
+    broker = new AwsBroker(sns, lambda, logger, topicRoot);
+    done();
+
+  });
+
+  lab.test("Correctly routes a message to SNS", done => {
+
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const taskName = "Task-For-Test";
+    const expected = {
+      Message: '"eyJ1cmwiOiJodHRwOi8vd3d3LmNoYWRtYWNleS5jby51ayJ9"',
+      TopicArn: 'arn:aws:sns:eu-west-1:625894027313:Task-For-Test'
+    };
+
+    const stub = sinon.stub(sns, "publish", (params, callback) => {
+      expect(params).to.equal(expected);
+      callback(null, { "test": true });
+    });
+
+    return broker.broadcast(taskName, msg)
+      .then(result => {
+        expect(result).to.be.an.object();
+        expect(result.success).to.be.true();
+        stub.restore();
+      })
+      .catch(err => {
+        Code.fail(`unexpected error: ${err.message}`);
+      });
+  });
+
+  lab.test("SNS throws an unexpected error", done => {
+
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const taskName = "Task-For-Test";
+    const expected = {
+      Message: '"eyJ1cmwiOiJodHRwOi8vd3d3LmNoYWRtYWNleS5jby51ayJ9"',
+      TopicArn: 'arn:aws:sns:eu-west-1:625894027313:Task-For-Test'
+    };
+
+    const error = new Error("ERROR");
+
+    const stub = sinon.stub(sns, "publish", (params, callback) => {
+      expect(params).to.equal(expected);
+      callback(error, null);
+    });
+
+    return broker.broadcast(taskName, msg)
+      .then(result => {
+        expect(result).to.be.an.object();
+        expect(result.success).to.be.false();
+        expect(result.message).to.equal(error.message);
+        stub.restore();
+      })
+      .catch(err => {
+        Code.fail(`unexpected error: ${err.message}`);
+      });
+  });
+
+});
 
 // const broadcastGroup: nodeunit.ITestGroup = {
 //   "Correctly routes a message to SNS": function (test: nodeunit.Test): void {

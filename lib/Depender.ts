@@ -1,36 +1,36 @@
-﻿let protectedInstance;
+﻿// let protectedInstance;
 
-export default function getDependerInstance(): InversionOfControl {
-  protectedInstance = !protectedInstance ? new InversionOfControl() : protectedInstance;
+// export default function getDependerInstance(): InversionOfControl {
+//   protectedInstance = !protectedInstance ? new InversionOfControl() : protectedInstance;
 
-  return protectedInstance;
-}
+//   return protectedInstance;
+// }
 
-export class InversionOfControl {
+// export class InversionOfControl {
 
-  private dependencyIndex: DependencyIndex;
+//   private dependencyIndex: DependencyIndex;
 
-  constructor() {
-    this.dependencyIndex = {};
-  }
+//   constructor() {
+//     this.dependencyIndex = {};
+//   }
 
-  public registerIndex(index: any) {
-    this.dependencyIndex = index;
-  }
+//   public registerIndex(index: any) {
+//     this.dependencyIndex = index;
+//   }
 
-  /*
-  public register(key: string, object: any) {
+//   /*
+//   public register(key: string, object: any) {
 
-  }
-  */
+//   }
+//   */
 
-  public resolve(objectKey: string) {
+//   public resolve(objectKey: string) {
 
-    return this.dependencyIndex[objectKey];
-  }
+//     return this.dependencyIndex[objectKey];
+//   }
 
-}
+// }
 
-export interface DependencyIndex {
-  [index: string]: any;
-}
+// export interface DependencyIndex {
+//   [index: string]: any;
+// }

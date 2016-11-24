@@ -23,6 +23,10 @@ method("getCoreComponents", () => {
 
   });
 
+  helper.functionParameterTest(lambshank.getCoreComponents, ["filename"], fileName);
+
+/*
+
   lab.test("throws when provided a null filename", done => {
 
     try {
@@ -51,6 +55,8 @@ method("getCoreComponents", () => {
 
 
   });
+
+*/
 
   lab.test("throws when provided a well-formed JSON document which doesn't have a topicRoot", done => {
 
