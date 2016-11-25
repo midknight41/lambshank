@@ -5,10 +5,10 @@ let singleton = null;
 
 export function getCoreComponents(configFile: string): CoreFramework {
 
-  if (singleton) return singleton;
-
   thrower({ configFile })
     .check("configFile").is.a.string();
+
+  if (singleton) return singleton;
 
   const config = getConfig(configFile);
 

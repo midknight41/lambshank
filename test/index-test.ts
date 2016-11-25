@@ -23,7 +23,7 @@ method("getCoreComponents", () => {
 
   });
 
-  helper.functionParameterTest(lambshank.getCoreComponents, ["filename"], fileName);
+  helper.functionParameterTest(lambshank.getCoreComponents, ["configFile"], fileName);
 
 /*
 
