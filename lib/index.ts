@@ -1,14 +1,18 @@
 import getConfig from "./ConfigManager";
 import { CoreFramework } from "./CoreFramework";
 import { thrower } from "check-verify";
+let singleton = null;
 
-export function getCoreComponents(fileName: string) {
+export function getCoreComponents(configFile: string): CoreFramework {
 
-  thrower({ fileName })
-    .check("fileName").is.a.string();
+  if (singleton) return singleton;
 
-  const config = getConfig(fileName);
+  thrower({ configFile })
+    .check("configFile").is.a.string();
 
-  return new CoreFramework(config);
+  const config = getConfig(configFile);
+
+  singleton = new CoreFramework(config);
+  return singleton;
 
 }
