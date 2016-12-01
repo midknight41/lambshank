@@ -86,8 +86,12 @@ export class CoreFramework {
   public createComponentBuilder(label: string) {
     const group = this.createLoggingGroup(label);
 
-    return new Builder(group);
+    const builder = new Builder(group);
 
+    const build = builder.build.bind(builder);
+
+    builder.build = build;
+    return builder;
   }
 
   public registerHandlers(handlers: IHandler<{}, {}>[]) {
