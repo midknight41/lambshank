@@ -5,11 +5,11 @@ import * as Q from "q";
 let display = false;
 
 export default class MockLogger implements ILogger, IAdvancedLogger {
-  trace(...params) { if (display) console.log("trace", params); }
-  info(...params) { if (display) console.log("info", params); }
+  trace(...params) { if (display) console.log("ml.trace", params); }
+  info(...params) { if (display) console.log("ml.info", params); }
   error(...params) { if (display) console.log("ml.error", params); }
-  debug(...params) { if (display) console.log("debug", params); }
-  warn(...params) { if (display) console.log("warn", params); }
+  debug(...params) { if (display) console.log("ml.debug", params); }
+  warn(...params) { if (display) console.log("ml.warn", params); }
 
   public logAndReject(methodId: string, message: any, data: any, err?: Error): Q.Promise {
 

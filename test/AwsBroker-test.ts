@@ -5,17 +5,18 @@ import * as sinon from "sinon";
 import * as Q from "q";
 import getHelper from "lab-testing";
 
+import ErrorRegistry from "../lib/ErrorRegistry";
 import AwsBroker from "../lib/AwsBroker";
 import * as MockAws from "./Mocks/MockAws";
 import MockLogger from "./Mocks/Logging";
 
 const lab = exports.lab = Lab.script();
 const expect = Code.expect;
-const helper = getHelper(lab);
+const testing = getHelper(lab);
 
-const method = helper.createExperiment("Lambshank", "AwsBroker");
+const method = testing.createExperiment("Lambshank", "AwsBroker");
 
-method("broadcast", () => {
+method("constructor", () => {
 
   const topicRoot = "arn:aws:sns:eu-west-1:625894027313";
   const sns = new MockAws.SNS();
@@ -24,11 +25,11 @@ method("broadcast", () => {
   const logger = new MockLogger();
   const broker = new AwsBroker(sns, lambda, logger, topicRoot);
 
-  helper.standardContructorTest(AwsBroker, ["sns", "lambda", "logger", "topicRoot"], sns, lambda, logger, topicRoot);
+  testing.standardContructorTest(AwsBroker, ["sns", "lambda", "logger", "topicRoot"], sns, lambda, logger, topicRoot);
 
 });
 
-method("broadcast", () => {
+method("broadcast()", () => {
 
   let topicRoot: string;
   let sns: MockAws.SNS;
@@ -36,6 +37,7 @@ method("broadcast", () => {
 
   let logger: MockLogger;
   let broker: AwsBroker;
+  let stub: Sinon.SinonSpy;
 
   lab.before(done => {
 
@@ -49,7 +51,12 @@ method("broadcast", () => {
 
   });
 
-  lab.test("Correctly routes a message to SNS", done => {
+  lab.afterEach(done => {
+    stub.restore();
+    return done();
+  });
+
+  lab.test("correctly routes a message to SNS", done => {
 
     const msg = { url: "http://www.chadmacey.co.uk" };
     const taskName = "Task-For-Test";
@@ -58,7 +65,7 @@ method("broadcast", () => {
       TopicArn: "arn:aws:sns:eu-west-1:625894027313:Task-For-Test"
     };
 
-    const stub = sinon.stub(sns, "publish", (params, callback) => {
+    stub = sinon.stub(sns, "publish", (params, callback) => {
       expect(params).to.equal(expected);
       callback(null, { "test": true });
     });
@@ -67,14 +74,13 @@ method("broadcast", () => {
       .then(result => {
         expect(result).to.be.an.object();
         expect(result.success).to.be.true();
-        stub.restore();
       })
       .catch(err => {
         Code.fail(`unexpected error: ${err.message}`);
       });
   });
 
-  lab.test("SNS throws an unexpected error", done => {
+  lab.test("should not succeed and should not throw if SNS throws an unexpected error", done => {
 
     const msg = { url: "http://www.chadmacey.co.uk" };
     const taskName = "Task-For-Test";
@@ -85,7 +91,7 @@ method("broadcast", () => {
 
     const error = new Error("ERROR");
 
-    const stub = sinon.stub(sns, "publish", (params, callback) => {
+    stub = sinon.stub(sns, "publish", (params, callback) => {
       expect(params).to.equal(expected);
       callback(error, null);
     });
@@ -95,7 +101,70 @@ method("broadcast", () => {
         expect(result).to.be.an.object();
         expect(result.success).to.be.false();
         expect(result.message).to.equal(error.message);
-        stub.restore();
+      })
+      .catch(err => {
+        Code.fail(`unexpected error: ${err.message}`);
+      });
+  });
+
+  lab.test("should not succeed and should not throw on null eventName", done => {
+
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const taskName = "Task-For-Test";
+
+    return broker.broadcast(null, msg)
+      .then(result => {
+        expect(result).to.be.an.object();
+        expect(result.success).to.be.false();
+        expect(result.message).to.endWith("not a populated string");
+      })
+      .catch(err => {
+        Code.fail(`unexpected error: ${err.message}`);
+      });
+  });
+
+  lab.test("should not succeed and should not throw on undefined eventName", done => {
+
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const taskName = "Task-For-Test";
+
+    return broker.broadcast(undefined, msg)
+      .then(result => {
+        expect(result).to.be.an.object();
+        expect(result.success).to.be.false();
+        expect(result.message).to.endWith("not a populated string");
+      })
+      .catch(err => {
+        Code.fail(`unexpected error: ${err.message}`);
+      });
+  });
+
+  lab.test("should not succeed and should not throw on null message", done => {
+
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const taskName = "Task-For-Test";
+
+    return broker.broadcast(taskName, null)
+      .then(result => {
+        expect(result).to.be.an.object();
+        expect(result.success).to.be.false();
+        expect(result.message).to.endWith("not an object");
+      })
+      .catch(err => {
+        Code.fail(`unexpected error: ${err.message}`);
+      });
+  });
+
+  lab.test("should not succeed and should not throw on undefined message", done => {
+
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const taskName = "Task-For-Test";
+
+    return broker.broadcast(taskName, undefined)
+      .then(result => {
+        expect(result).to.be.an.object();
+        expect(result.success).to.be.false();
+        expect(result.message).to.endWith("not an object");
       })
       .catch(err => {
         Code.fail(`unexpected error: ${err.message}`);
@@ -104,365 +173,230 @@ method("broadcast", () => {
 
 });
 
-// const broadcastGroup: nodeunit.ITestGroup = {
-//   "Correctly routes a message to SNS": function (test: nodeunit.Test): void {
-
-//     const deps = getGoodDependencies();
-
-//     const msg = { url: "http://www.chadmacey.co.uk" };
-
-//     const taskName = "Task-For-Test";
-
-//     const testParams = {
-//       Message: '"eyJ1cmwiOiJodHRwOi8vd3d3LmNoYWRtYWNleS5jby51ayJ9"',
-//       TopicArn: 'arn:aws:sns:eu-west-1:625894027313:Task-For-Test'
-//     };
-
-//     gently.expect(deps.sns, "publish", (params, cb) => {
-
-//       test.notEqual(params, null, "params are null");
-//       test.deepEqual(params, testParams, "params failed deep equal");
-
-//       cb(null, { test: true });
-
-//     });
-
-
-//     deps.broker.broadcast(taskName, msg)
-//       .then(result => {
-//         test.notEqual(result, null);
-//         test.equal(result.test, true);
-//         test.done();
-//       })
-//       .catch(err => {
-//         test.equal(true, false);
-//       })
-//       .done();
-//   },
-//   "Should not throw and should return a failure message on a null taskName": function (test: nodeunit.Test): void {
-
-//     const deps = getGoodDependencies();
-
-//     const taskName = null;
-//     const msg = { url: "http://www.chadmacey.co.uk" };
-
-//     deps.broker.broadcast(taskName, msg)
-//       .then(result => {
-//         test.notEqual(result, null);
-//         test.equal(result.success, false);
-//         test.done();
-//       })
-//       .catch(err => {
-//         test.equal(true, false);
-//       })
-//       .done();
-//   },
-//   "Should not throw and should return a failure message on a empty string for taskName": function (test: nodeunit.Test): void {
-
-//     const deps = getGoodDependencies();
-
-//     const taskName = "";
-//     const msg = { url: "http://www.chadmacey.co.uk" };
-
-//     deps.broker.broadcast(taskName, msg)
-//       .then(result => {
-//         test.notEqual(result, null);
-//         test.equal(result.success, false);
-//         test.done();
-//       })
-//       .catch(err => {
-//         test.equal(true, false);
-//       })
-//       .done();
-//   },
-//   "Should not throw and should return a failure message on a undefined taskName": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
-
-//     const taskName = undefined;
-//     const msg = { url: "http://www.chadmacey.co.uk" };
-
-//     deps.broker.broadcast(taskName, msg)
-//       .then(result => {
-//         test.notEqual(result, null);
-//         test.equal(result.success, false);
-//         test.done();
-//       })
-//       .catch(err => {
-//         test.equal(true, false);
-//       })
-//       .done();
-//   },
-//   "Should not throw and should return a failure message on a null messsage": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
-
-//     const taskName = "Test-Task-Name";
-//     const msg = null;
-
-//     deps.broker.broadcast(taskName, msg)
-//       .then(result => {
-//         test.notEqual(result, null);
-//         test.equal(result.success, false);
-//         test.done();
-//       })
-//       .catch(err => {
-//         test.equal(true, false);
-//       })
-//       .done();
-
-//   },
-//   "Should not throw and should return a failure message on a undefined message": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
-
-//     const taskName = "Test-Task-Name";
-//     const msg = undefined;
-
-//     deps.broker.broadcast(taskName, msg)
-//       .then(result => {
-//         test.notEqual(result, null);
-//         test.equal(result.success, false);
-//         test.done();
-//       })
-//       .catch(err => {
-//         test.equal(true, false);
-//       })
-//       .done();
-//   },
-
-// }
-
-// const invokeGroup: nodeunit.ITestGroup = {
-//   "Correctly call a Lambda function": function (test: nodeunit.Test): void {
-
-//     const deps = getGoodDependencies();
-
-//     const msg = { url: "http://www.chadmacey.co.uk" };
-
-//     const testParams = {
-//       FunctionName: "Task-For-Test",
-//       Payload: JSON.stringify(msg)
-//     };
-
-//     gently.expect(deps.lambda, "invoke", (params, cb) => {
-
-//       test.notEqual(params, null, "params are null");
-//       test.deepEqual(params, testParams, "params failed deep equal");
-
-//       const response = {
-//         StatusCode: 200,
-//         Payload: JSON.stringify({ test: true })
-//       }
-
-//       cb(null, response);
-
-//     });
-
-//     deps.broker.invoke(testParams.FunctionName, msg)
-//       .then(result => {
-
-//         test.notEqual(result, null);
-//         test.equal(result.test, true);
-//         test.done();
-//       })
-//       .catch(err => {
-//         test.equal(true, false);
-//       })
-//       .done();
-//   },
-//   "Reject if task name is null": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
-
-//     const msg = { url: "http://www.chadmacey.co.uk" };
-
-//     deps.broker.invoke(null, msg)
-//       .then(result => {
-//         test.equal(true, false, "unexpected success");
-//       })
-//       .catch(err => {
-//         test.notEqual(err, null);
-//         test.done();
-//       })
-//       .done();
-
-//   },
-//   "Reject if task name is undefined": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
+method("invoke()", () => {
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
+  const topicRoot = "arn:aws:sns:eu-west-1:625894027313";
+  const sns = new MockAws.SNS();
+  const lambda = new MockAws.Lambda();
 
-//     deps.broker.invoke(undefined, msg)
-//       .then(result => {
-//         test.equal(true, false, "unexpected success");
-//       })
-//       .catch(err => {
-//         test.notEqual(err, null);
-//         test.done();
-//       })
-//       .done();
+  const logger = new MockLogger();
+  const broker = new AwsBroker(sns, lambda, logger, topicRoot);
 
-//   },
-//   "Reject if task name is an empty string": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
+  testing.rejects.methodParameterTest(broker, broker.invoke, ["eventName", "message"], "Task-For-Test", { a: "b" });
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
+});
 
-//     deps.broker.invoke(null, msg)
-//       .then(result => {
-//         test.equal(true, false, "unexpected success");
-//       })
-//       .catch(err => {
-//         test.notEqual(err, null);
-//         test.done();
-//       })
-//       .done();
+method("invoke()", () => {
 
-//   },
-//   "Reject if message is null": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
+  let topicRoot: string;
+  let sns: MockAws.SNS;
+  let lambda: MockAws.Lambda;
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
+  let logger: MockLogger;
+  let broker: AwsBroker;
+  let stub: Sinon.SinonSpy;
 
-//     deps.broker.invoke("Task-Name", null)
-//       .then(result => {
-//         test.equal(true, false, "unexpected success");
-//       })
-//       .catch(err => {
-//         test.notEqual(err, null);
-//         test.done();
-//       })
-//       .done();
+  lab.before(done => {
 
-//   },
-//   "Reject if message is undefined": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
+    topicRoot = "arn:aws:sns:eu-west-1:625894027313";
+    sns = new MockAws.SNS();
+    lambda = new MockAws.Lambda();
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
+    logger = new MockLogger();
+    broker = new AwsBroker(sns, lambda, logger, topicRoot);
+    return done();
 
-//     deps.broker.invoke("Task-Name", undefined)
-//       .then(result => {
-//         test.equal(true, false, "unexpected success");
-//       })
-//       .catch(err => {
-//         test.notEqual(err, null);
-//         test.done();
-//       })
-//       .done();
+  });
 
-//   }
-// }
+  lab.afterEach(done => {
+    stub.restore();
+    return done();
+  });
 
-// const processMessageGroup: nodeunit.ITestGroup = {
-//   "Can correctly route a message": function (test: nodeunit.Test): void {
+  lab.test("correctly calls another Lambda function", done => {
 
-//     const deps = getGoodDependencies();
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const expected = {
+      FunctionName: "Task-For-Test",
+      Payload: JSON.stringify(msg)
+    };
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
+    const internalMessage = { test: true };
+    const response = {
+      StatusCode: 200,
+      Payload: JSON.stringify(internalMessage)
+    };
 
-//     const eventName = "Task-For-Test";
+    stub = sinon.stub(lambda, "invoke", (params, callback) => {
+      expect(params).to.equal(expected);
+      callback(null, response);
+    });
 
-//     const callback = function (err, data) {
+    return broker.invoke(expected.FunctionName, msg)
+      .then(result => {
+        expect(result).to.be.an.object();
+        expect(result).to.equal(internalMessage);
+        return true;
+      })
+      .catch(err => {
+        Code.fail(`unexpected error: ${err.message}`);
+      });
+  });
 
-//     };
+  lab.test("throws an error if remote lambda function throws an unexpected error", done => {
 
-//     deps.broker.on(eventName, (data, cb) => {
-//       test.deepEqual(data, msg, "messages are not same");
-//       test.equal(cb, callback);
-//       test.done();
-//     });
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const taskName = "Task-For-Test";
+    const expected = {
+      FunctionName: "Task-For-Test",
+      Payload: JSON.stringify(msg)
+    };
 
-//     deps.broker.processMessage(eventName, msg, callback);
+    const error = new Error("ERROR");
 
+    stub = sinon.stub(lambda, "invoke", (params, callback) => {
+      expect(params).to.equal(expected);
+      callback(error, null);
+    });
 
+    return broker.invoke(taskName, msg)
+      .then(result => {
+        Code.fail(`unexpected error: ${result}`);
+      })
+      .catch(err => {
+        expect(err).to.be.an.error(Error, error.message);
+      });
+  });
 
-//   },
-//   "Throw if task name is null": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
+});
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
 
-//     test.throws(() => {
-//       deps.broker.processMessage(null, msg, (err, data) => {
+method("processMessage()", () => {
 
-//       });
+  const topicRoot = "arn:aws:sns:eu-west-1:625894027313";
+  const sns = new MockAws.SNS();
+  const lambda = new MockAws.Lambda();
 
-//     });
+  const logger = new MockLogger();
+  const broker = new AwsBroker(sns, lambda, logger, topicRoot);
 
-//     test.done();
+  const fnc = function (err, data) {
+    return;
+  };
 
-//   },
-//   "Throw if task name is undefined": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
+  testing.throws.methodParameterTest(broker, broker.processMessage, ["eventName", "message", "callback"], "Task-For-Test", { a: "b" }, fnc);
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
+});
 
-//     test.throws(() => {
-//       deps.broker.processMessage(undefined, msg, (err, data) => {
+method("processMessage()", () => {
 
-//       });
+  let topicRoot: string;
+  let sns: MockAws.SNS;
+  let lambda: MockAws.Lambda;
 
-//     });
+  let logger: MockLogger;
+  let broker: AwsBroker;
+  let stub: Sinon.SinonSpy;
 
-//     test.done();
+  lab.beforeEach(done => {
 
-//   },
-//   "Throw if task name is an empty string": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
+    topicRoot = "arn:aws:sns:eu-west-1:625894027313";
+    sns = new MockAws.SNS();
+    lambda = new MockAws.Lambda();
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
+    logger = new MockLogger();
+    broker = new AwsBroker(sns, lambda, logger, topicRoot);
+    return done();
 
-//     test.throws(() => {
-//       deps.broker.processMessage("", msg, (err, data) => {
+  });
 
-//       });
+  lab.test("correctly calls processMessage when invoked directly", done => {
 
-//     });
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const expected = {
+      FunctionName: "Task-For-Test",
+      Payload: JSON.stringify(msg)
+    };
 
-//     test.done();
-//   },
-//   "Throw if message is null": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
+    const fnc = function (err, data) {
+      return;
+    };
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
+    broker.on(expected.FunctionName, (data, callback) => {
 
-//     test.throws(() => {
-//       deps.broker.processMessage("Task-Name", null, (err, data) => {
+      expect(data).to.equal(msg);
+      expect(callback).to.equal(callback);
+      return done();
 
-//       });
+    });
 
-//     });
+    broker.processMessage(expected.FunctionName, msg, fnc);
 
-//     test.done();
+  });
 
-//   },
-//   "Throw if message is undefined": function (test: nodeunit.Test): void {
-//     const deps = getGoodDependencies();
+  lab.test("correctly calls processMessage when invoked via SNS", done => {
 
-//     const msg = { url: "http://www.chadmacey.co.uk" };
+    const decodedMessage = { url: "http://www.chadmacey.co.uk" };
+    const snsMessage = {
+      Records: [{
+        Sns:
+        { Message: "eyJ1cmwiOiJodHRwOi8vd3d3LmNoYWRtYWNleS5jby51ayJ9" }
+      }]
+    };
 
-//     test.throws(() => {
-//       deps.broker.processMessage("Task-Name", undefined, (err, data) => {
+    const expected = {
+      FunctionName: "Task-For-Test",
+      Payload: JSON.stringify(snsMessage)
+    };
 
-//       });
+    const fnc = function (err, data) {
+      return;
+    };
 
-//     });
+    broker.on(expected.FunctionName, (data, callback) => {
 
-//     test.done();
-//   }
-// }
+      expect(data).to.equal(decodedMessage);
+      expect(callback).to.equal(callback);
+      return done();
 
+    });
 
-// function getGoodDependencies() {
+    broker.processMessage(expected.FunctionName, snsMessage, fnc);
 
-//   const topicRoot = "arn:aws:sns:eu-west-1:625894027313";
-//   const sns = new MockAws.SNS();
-//   const lambda = new MockAws.Lambda();
+  });
 
-//   const logger = new MockLogger();
-//   const broker = new AwsBroker(sns, lambda, logger, topicRoot);
+  lab.test("throws a meaningful error when the SNS payload cannot be decoded", done => {
 
-//   return { topicRoot, sns, lambda, broker };
+    const decodedMessage = { url: "http://www.chadmacey.co.uk" };
+    const snsMessage = {
+      Records: [{
+        Sns:
+        { Message: decodedMessage }
+      }]
+    };
 
-// }
+    const expected = {
+      FunctionName: "Task-For-Test",
+      Payload: JSON.stringify(snsMessage)
+    };
 
-// exports.broadcast = broadcastGroup;
-// exports.invoke = invokeGroup;
-// exports.processMessage = processMessageGroup;
+    const fnc = function (err, data) {
+      return;
+    };
+
+    broker.on(expected.FunctionName, (data, callback) => {
+
+      Code.fail(`event '${expected.FunctionName}' should not be raised`);
+    });
+
+    try {
+      broker.processMessage(expected.FunctionName, snsMessage, fnc);
+
+    } catch (ex) {
+      expect(ex).to.be.an.error(Error, ErrorRegistry.Encoding.CannotDecode);
+      return done();
+    }
+
+  });
+
+});

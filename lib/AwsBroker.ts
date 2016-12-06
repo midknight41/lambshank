@@ -33,7 +33,6 @@ export default class AwsBroker extends EventEmitter implements IBroker {
 
   public broadcast(eventName: string, message: Object): Q.Promise {
 
-    // Broadcast should never throw an error. We need to trap any errors.
     const methodId = "AwsBroker.broadcast";
     this.logger.info(methodId, "broadcasting", { eventName, message });
 
@@ -44,6 +43,7 @@ export default class AwsBroker extends EventEmitter implements IBroker {
       .then(() => this.sendToSns(eventName, message))
       .then(() => Q.resolve({ success: true }))
       .catch((error: Error) => {
+        // Broadcast should never throw an error as it is fire-and-forget. We need to trap any errors.
         this.logger.error(methodId, `broadcast failed`, { error, eventName });
         return Q.resolve({ success: false, message: error.message });
       });
@@ -78,18 +78,25 @@ export default class AwsBroker extends EventEmitter implements IBroker {
     if (message.Records != null && message.Records[0] != null && message.Records[0].Sns != null && message.Records[0].Sns.Message != null) {
 
       // SNS message received. Decode and extract
+      let payload = message.Records[0].Sns.Message;
 
-      let extracted = message.Records[0].Sns.Message;
-      extracted = this.base64Decode(extracted);
+      try {
+        payload = this.base64Decode(payload);
 
-      this.logger.debug(methodId, "SNS message received and decoded.", extracted);
+      } catch (ex) {
+        const error = new Error(ErrorRegistry.Encoding.CannotDecode);
+        this.logger.error(methodId, "SNS message cannot be decoded.", { error, payload });
+        throw error;
+      }
 
-      this.emit(eventName, extracted, callback);
+      this.logger.debug(methodId, "SNS message received and decoded.", payload);
+
+      this.emit(eventName, payload, callback);
       return;
 
     }
 
-    // Emit raw message
+    // Emit raw message. This is for Lambda input
     this.emit(eventName, message, callback);
 
   }
@@ -109,9 +116,6 @@ export default class AwsBroker extends EventEmitter implements IBroker {
   }
 
   private callLambdaFunction(eventName: string, msg: Object): Q.Promise {
-
-    if (!eventName || eventName.length === 0) Q.reject(new Error(ErrorRegistry.Validation.BadRequest));
-    if (msg === null) msg = {};
 
     const params: AWS.Lambda.InvokeParams = {
       FunctionName: eventName,
