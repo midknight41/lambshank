@@ -18,12 +18,7 @@ const method = testing.createExperiment("Lambshank", "AwsBroker");
 
 method("constructor", () => {
 
-  const topicRoot = "arn:aws:sns:eu-west-1:625894027313";
-  const sns = new MockAws.SNS();
-  const lambda = new MockAws.Lambda();
-
-  const logger = new MockLogger();
-  const broker = new AwsBroker(sns, lambda, logger, topicRoot);
+  const {topicRoot, sns, lambda, logger, broker} = buildDependencies();
 
   testing.standardContructorTest(AwsBroker, ["sns", "lambda", "logger", "topicRoot"], sns, lambda, logger, topicRoot);
 
@@ -31,23 +26,18 @@ method("constructor", () => {
 
 method("broadcast()", () => {
 
-  let topicRoot: string;
   let sns: MockAws.SNS;
-  let lambda: MockAws.Lambda;
-
-  let logger: MockLogger;
   let broker: AwsBroker;
   let stub: Sinon.SinonSpy;
 
-  lab.before(done => {
+  lab.beforeEach(done => {
 
-    topicRoot = "arn:aws:sns:eu-west-1:625894027313";
-    sns = new MockAws.SNS();
-    lambda = new MockAws.Lambda();
+    const deps = buildDependencies();
 
-    logger = new MockLogger();
-    broker = new AwsBroker(sns, lambda, logger, topicRoot);
-    done();
+    sns = deps.sns;
+    broker = deps.broker;
+
+    return done();
 
   });
 
@@ -175,12 +165,7 @@ method("broadcast()", () => {
 
 method("invoke()", () => {
 
-  const topicRoot = "arn:aws:sns:eu-west-1:625894027313";
-  const sns = new MockAws.SNS();
-  const lambda = new MockAws.Lambda();
-
-  const logger = new MockLogger();
-  const broker = new AwsBroker(sns, lambda, logger, topicRoot);
+  const broker = buildDependencies().broker;
 
   testing.rejects.methodParameterTest(broker, broker.invoke, ["eventName", "message"], "Task-For-Test", { a: "b" });
 
@@ -188,22 +173,17 @@ method("invoke()", () => {
 
 method("invoke()", () => {
 
-  let topicRoot: string;
-  let sns: MockAws.SNS;
   let lambda: MockAws.Lambda;
-
-  let logger: MockLogger;
   let broker: AwsBroker;
   let stub: Sinon.SinonSpy;
 
-  lab.before(done => {
+  lab.beforeEach(done => {
 
-    topicRoot = "arn:aws:sns:eu-west-1:625894027313";
-    sns = new MockAws.SNS();
-    lambda = new MockAws.Lambda();
+    const deps = buildDependencies();
 
-    logger = new MockLogger();
-    broker = new AwsBroker(sns, lambda, logger, topicRoot);
+    lambda = deps.lambda;
+    broker = deps.broker;
+
     return done();
 
   });
@@ -261,24 +241,75 @@ method("invoke()", () => {
 
     return broker.invoke(taskName, msg)
       .then(result => {
-        Code.fail(`unexpected error: ${result}`);
+        Code.fail(`unexpected success: ${result}`);
       })
       .catch(err => {
         expect(err).to.be.an.error(Error, error.message);
       });
   });
 
-});
+  lab.test("throws an error if remote lambda function executes successfully but returns an error", done => {
 
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const taskName = "Task-For-Test";
+    const expected = {
+      FunctionName: "Task-For-Test",
+      Payload: JSON.stringify(msg)
+    };
+
+    const error = new Error("ERROR");
+    const failureResponse = {
+      FunctionError: error,
+      Payload: JSON.stringify({ errorMessage: "ERROR" })
+    };
+
+    stub = sinon.stub(lambda, "invoke", (params, callback) => {
+      expect(params).to.equal(expected);
+      callback(null, failureResponse);
+    });
+
+    return broker.invoke(taskName, msg)
+      .then(result => {
+        Code.fail(`unexpected success: ${result}`);
+      })
+      .catch(err => {
+        expect(err).to.be.an.error(Error, "ERROR");
+      });
+  });
+
+  lab.test("throws an error if remote lambda function returns bad JSON", done => {
+
+    const msg = { url: "http://www.chadmacey.co.uk" };
+    const taskName = "Task-For-Test";
+    const expected = {
+      FunctionName: "Task-For-Test",
+      Payload: JSON.stringify(msg)
+    };
+
+    const error = new Error("ERROR");
+    const failureResponse = {
+      FunctionError: error,
+      Payload: "Oh Dear: {"
+    };
+
+    stub = sinon.stub(lambda, "invoke", (params, callback) => {
+      expect(params).to.equal(expected);
+      callback(null, failureResponse);
+    });
+
+    return broker.invoke(taskName, msg)
+      .then(result => {
+        Code.fail(`unexpected success: ${result}`);
+      })
+      .catch(err => {
+        expect(err).to.be.an.error(SyntaxError);
+      });
+  });
+});
 
 method("processMessage()", () => {
 
-  const topicRoot = "arn:aws:sns:eu-west-1:625894027313";
-  const sns = new MockAws.SNS();
-  const lambda = new MockAws.Lambda();
-
-  const logger = new MockLogger();
-  const broker = new AwsBroker(sns, lambda, logger, topicRoot);
+  const broker = buildDependencies().broker;
 
   const fnc = function (err, data) {
     return;
@@ -290,22 +321,11 @@ method("processMessage()", () => {
 
 method("processMessage()", () => {
 
-  let topicRoot: string;
-  let sns: MockAws.SNS;
-  let lambda: MockAws.Lambda;
-
-  let logger: MockLogger;
   let broker: AwsBroker;
-  let stub: Sinon.SinonSpy;
 
   lab.beforeEach(done => {
 
-    topicRoot = "arn:aws:sns:eu-west-1:625894027313";
-    sns = new MockAws.SNS();
-    lambda = new MockAws.Lambda();
-
-    logger = new MockLogger();
-    broker = new AwsBroker(sns, lambda, logger, topicRoot);
+    broker = buildDependencies().broker;
     return done();
 
   });
@@ -400,3 +420,17 @@ method("processMessage()", () => {
   });
 
 });
+
+function buildDependencies() {
+
+  const topicRoot = "arn:aws:sns:eu-west-1:625894027313";
+  const sns = new MockAws.SNS();
+  const lambda = new MockAws.Lambda();
+
+  const logger = new MockLogger();
+  const broker = new AwsBroker(sns, lambda, logger, topicRoot);
+
+  return { broker, lambda, logger, sns, topicRoot };
+
+}
+

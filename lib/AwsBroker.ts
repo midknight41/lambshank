@@ -130,6 +130,7 @@ export default class AwsBroker extends EventEmitter implements IBroker {
         try {
           const payload = JSON.parse(data.Payload);
 
+          // Invoke was successful but the function returned an error
           if (data.FunctionError) return reject(new Error(payload.errorMessage));
 
           return resolve(payload);

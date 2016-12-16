@@ -1,4 +1,4 @@
-﻿import {IHandler, IBroker, ILogger, IContext} from "./Interfaces";
+﻿import { IHandler, IBroker, ILogger, IContext } from "./Interfaces";
 import { thrower } from "check-verify";
 import ExecutionContext from "./ExecutionContext";
 import ExecutionContextFactory from "./ExecutionContextFactory";
@@ -27,12 +27,12 @@ export default class Activator {
     thrower({ taskHandler })
       .check("taskHandler.name").is.a.string()
       .check("taskHandler.failure").is.a.string()
-      .check("taskHandler.success").is.a.string();
+      .check("taskHandler.success").is.a.string()
+      .check("taskHandler.handler").is.a.function();
 
     this.broker.on(taskHandler.name, (msg, callback: (err, data) => void) => {
 
       const context = this.contextFactory.create<Request, Response>(taskHandler, msg, callback);
-
       taskHandler.handler(context);
 
     });

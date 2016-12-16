@@ -4,7 +4,6 @@ import { thrower, promiser, CheckVerify } from "check-verify";
 
 export default class ExecutionContext<Request, Response> implements IContext<Request, Response> {
 
-  // public expect: IContextValidator;
   public payload: Request;
 
   private broker: IBroker;
@@ -51,9 +50,8 @@ export default class ExecutionContext<Request, Response> implements IContext<Req
 
   public execute(executionCode: (payload: any) => Q.Promise) {
 
-    thrower()
-      .check("executionCode").is.a.function()
-      .verify({ executionCode });
+    thrower({ executionCode })
+      .check("executionCode").is.a.function();
 
     // validate parameters and deliver the payload
     this.checker.verify(this.payload)
@@ -62,20 +60,6 @@ export default class ExecutionContext<Request, Response> implements IContext<Req
         this.fail(error, "failed parameter validation");
       })
       .done();
-
-    /*
-        trap(
-          () => {
-            this.expectationLog.validate(this.payload);
-          },
-          () => {
-            return executionCode(this.payload);
-          }).catch(error => {
-            this.fail(error, "failed parameter validation");
-          })
-          .done();
-    
-    */
 
   }
 
