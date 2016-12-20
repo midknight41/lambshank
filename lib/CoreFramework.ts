@@ -116,6 +116,9 @@ export class Builder {
 
   constructor(loggingGroup) {
     this.loggingGroup = loggingGroup;
+
+    this.build = this.build.bind(this);
+
   }
 
   public build(Type, ...deps) {

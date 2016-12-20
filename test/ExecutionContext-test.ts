@@ -28,7 +28,6 @@ method("The create() method", () => {
 
   const { broker } = buildDependencies();
 
-
 });
 
 function buildDependencies() {
