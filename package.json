@@ -1,6 +1,6 @@
 {
   "name": "lambshank",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Insert Description here",
   "main": "./dist/lib/index.js",
   "scripts": {
