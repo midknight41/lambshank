@@ -1,6 +1,6 @@
 {
   "name": "lambshank",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "AWS Lambda Event Driven Framework",
   "main": "./dist/lib/index.js",
   "types": "./dist/lib/index.d.ts",
