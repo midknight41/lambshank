@@ -48,6 +48,7 @@
     "@types/sinon": "^1.16.34",
     "aws-sdk": "^2.7.21",
     "check-verify": "^1.0.0",
+    "commander": "^2.9.0",
     "lodash": "^4.16.4",
     "nconf": "^0.8.4",
     "q": "^1.4.1"
