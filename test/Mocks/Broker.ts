@@ -4,7 +4,7 @@ import { EventEmitter } from "events";
 import { IBroker, ILogger } from "../../lib/Interfaces";
 
 export default class Broker extends EventEmitter implements IBroker {
-  public broadcast(eventName: string, msg: any): Q.Promise {
+  public broadcast(eventName: string, msg: any): Q.Promise<any> {
     this.emit(eventName, msg);
     return Q.resolve(msg);
   }

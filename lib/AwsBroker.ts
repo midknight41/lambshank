@@ -31,7 +31,7 @@ export default class AwsBroker extends EventEmitter implements IBroker {
 
   }
 
-  public broadcast(eventName: string, message: Object): Q.Promise {
+  public broadcast(eventName: string, message: Object): Q.Promise<any> {
 
     const methodId = "AwsBroker.broadcast";
     this.logger.info(methodId, "broadcasting", { eventName, message });
@@ -50,7 +50,7 @@ export default class AwsBroker extends EventEmitter implements IBroker {
 
   }
 
-  public invoke(eventName: string, message: Object): Q.Promise {
+  public invoke(eventName: string, message: Object): Q.Promise<any> {
 
     const methodId = "AwsBroker.invoke";
     this.logger.info(methodId, "invoking", { eventName, message });
@@ -101,7 +101,7 @@ export default class AwsBroker extends EventEmitter implements IBroker {
 
   }
 
-  private sendToSns(eventName: string, msg: Object): Q.Promise {
+  private sendToSns(eventName: string, msg: Object): Q.Promise<any> {
 
     const encoded = this.base64Encode(msg);
 
@@ -115,7 +115,7 @@ export default class AwsBroker extends EventEmitter implements IBroker {
 
   }
 
-  private callLambdaFunction(eventName: string, msg: Object): Q.Promise {
+  private callLambdaFunction(eventName: string, msg: Object): Q.Promise<any> {
 
     const params: AWS.Lambda.InvocationRequest = {
       FunctionName: eventName,

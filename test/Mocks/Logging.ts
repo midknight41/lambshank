@@ -11,7 +11,7 @@ export default class MockLogger implements ILogger, IAdvancedLogger {
   debug(...params) { if (display) console.log("ml.debug", params); }
   warn(...params) { if (display) console.log("ml.warn", params); }
 
-  public logAndReject(methodId: string, message: any, data: any, err?: Error): Q.Promise {
+  public logAndReject(methodId: string, message: any, data: any, err?: Error): Q.Promise<any> {
 
     if (err == null) {
       err = message;
@@ -22,7 +22,7 @@ export default class MockLogger implements ILogger, IAdvancedLogger {
     return Q.reject(err);
   }
 
-  public logAndResolve(methodId: string, message: string, data?: any): Q.Promise {
+  public logAndResolve(methodId: string, message: string, data?: any): Q.Promise<any> {
 
     this.info(methodId, message);
     return Q.resolve(data);

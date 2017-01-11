@@ -9,7 +9,7 @@ export default class ExecutionContext<Request, Response> implements IContext<Req
   private broker: IBroker;
   private taskHandler: IHandler<Request, Response>;
   private callback: (err, data) => void;
-  private checker: CheckVerify<Q.Promise>;
+  private checker: CheckVerify<Q.Promise<any>>;
 
   constructor(broker: IBroker, taskHandler: IHandler<Request, Response>, payload: Request, callback: (err, data) => void) {
 
@@ -28,7 +28,7 @@ export default class ExecutionContext<Request, Response> implements IContext<Req
 
   }
 
-  public check(field: string): CheckVerify<Q.Promise> {
+  public check(field: string): CheckVerify<Q.Promise<any>> {
 
     return this.checker.check(field);
   }
@@ -48,7 +48,7 @@ export default class ExecutionContext<Request, Response> implements IContext<Req
       });
   }
 
-  public execute(executionCode: (payload: any) => Q.Promise) {
+  public execute(executionCode: (payload: any) => Q.Promise<any>) {
 
     thrower({ executionCode })
       .check("executionCode").is.a.function();

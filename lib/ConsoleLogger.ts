@@ -16,7 +16,7 @@ export default class ConsoleLogger implements ILogger {
   public debug(...params) { if (this.display) console.log("debug", params); }
   public warn(...params) { if (this.display) console.log("warn", params); }
 
-  public logAndReject(methodId: string, message: any, data: any, error?: Error): Q.Promise {
+  public logAndReject(methodId: string, message: any, data: any, error?: Error): Q.Promise<any> {
 
     if (error == null) {
       error = message;
@@ -27,7 +27,7 @@ export default class ConsoleLogger implements ILogger {
     return Q.reject(error);
   }
 
-  public logAndResolve(methodId: string, message: string, data?: any): Q.Promise {
+  public logAndResolve(methodId: string, message: string, data?: any): Q.Promise<any> {
 
     this.info(methodId, message);
     return Q.resolve(data);

@@ -57,7 +57,7 @@ export class ClassLogger implements IAdvancedLogger {
     /* tslint:enable:no-console */
   }
 
-  public logAndReject(methodId: string, message: any, data: any, error?: Error): Q.Promise {
+  public logAndReject(methodId: string, message: any, data: any, error?: Error): Q.Promise<any> {
 
     if (error == null) {
       error = message;
@@ -68,7 +68,7 @@ export class ClassLogger implements IAdvancedLogger {
     return Q.reject(error);
   }
 
-  public logAndResolve(methodId: string, message: string, data?: any): Q.Promise {
+  public logAndResolve(methodId: string, message: string, data?: any): Q.Promise<any> {
 
     this.info(methodId, message);
     return Q.resolve(data);

@@ -16,7 +16,7 @@ export default class Task {
     this.taskName = taskName;
   }
 
-  public invoke(message: Object): Q.Promise {
+  public invoke(message: Object): Q.Promise<any> {
 
     if (message == null) message = {};
 
