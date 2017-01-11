@@ -41,6 +41,7 @@
   "license": "MIT",
   "dependencies": {
     "@types/code": "^4.0.1",
+    "@types/commander": "^2.3.31",
     "@types/lab": "^11.1.0",
     "@types/nconf": "0.0.33",
     "@types/node": "^7.0.0",
