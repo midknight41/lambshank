@@ -47,6 +47,7 @@ export class SNS {
   public deleteTopic = stub();
   public publish = stub();
   public endpoint = null;
+  public config: any;
 
   constructor() {
     return;

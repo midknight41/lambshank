@@ -30,6 +30,7 @@ export default class Activator {
       .check("taskHandler.success").is.a.string()
       .check("taskHandler.handler").is.a.function();
 
+    // TODO: Consider separating the listening below from registration
     this.broker.on(taskHandler.name, (msg, callback: (err, data) => void) => {
 
       const context = this.contextFactory.create<Request, Response>(taskHandler, msg, callback);

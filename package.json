@@ -1,11 +1,13 @@
 {
   "name": "lambshank",
   "version": "0.0.6",
-  "description": "Insert Description here",
+  "description": "AWS Lambda Event Driven Framework",
   "main": "./dist/lib/index.js",
+  "types": "./dist/lib/index.d.ts",
+  "typings": "./dist/lib/index.d.ts",
   "scripts": {
     "prebuild": "npm run clean",
-    "build": "tsc --pretty -p ./ -d",
+    "build": "tsc --pretty --lib es2015 -p ./ -d",
     "clean": "./node_modules/.bin/rimraf dist/*",
     "precover": "npm run build",
     "cover": "istanbul cover ./node_modules/lab/bin/lab ./dist/test --leaks",
@@ -38,8 +40,13 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "aws-sdk": "2.6.15",
-    "check-verify": "^0.4.0",
+    "@types/code": "^4.0.1",
+    "@types/lab": "^11.1.0",
+    "@types/node": "^7.0.0",
+    "@types/q": "0.0.32",
+    "@types/sinon": "^1.16.34",
+    "aws-sdk": "^2.7.21",
+    "check-verify": "^0.4.2",
     "lodash": "^4.16.4",
     "nconf": "^0.8.4",
     "q": "^1.4.1"

@@ -14,7 +14,7 @@ export default class AwsBroker extends EventEmitter implements IBroker {
   private topicRoot: string;
   private logger: ILogger;
 
-  constructor(sns: AWS.SNS, lambda: AWS.Lambda, logger: ILogger, topicRoot: string) {
+  constructor(sns /*: AWS.SNS */, lambda /* : AWS.Lambda */, logger: ILogger, topicRoot: string) {
 
     super();
 
@@ -105,7 +105,7 @@ export default class AwsBroker extends EventEmitter implements IBroker {
 
     const encoded = this.base64Encode(msg);
 
-    const params: AWS.Sns.PublishRequest = {
+    const params: AWS.SNS.PublishInput = {
       Message: JSON.stringify(encoded),
       TopicArn: `${this.topicRoot}:${eventName}`
     };
@@ -117,7 +117,7 @@ export default class AwsBroker extends EventEmitter implements IBroker {
 
   private callLambdaFunction(eventName: string, msg: Object): Q.Promise {
 
-    const params: AWS.Lambda.InvokeParams = {
+    const params: AWS.Lambda.InvocationRequest = {
       FunctionName: eventName,
       Payload: JSON.stringify(msg)
     };
@@ -128,7 +128,9 @@ export default class AwsBroker extends EventEmitter implements IBroker {
         if (err) return reject(err); // an error occurred
 
         try {
-          const payload = JSON.parse(data.Payload);
+
+          const rawPayload: any = data.Payload;
+          const payload = JSON.parse(rawPayload);
 
           // Invoke was successful but the function returned an error
           if (data.FunctionError) return reject(new Error(payload.errorMessage));

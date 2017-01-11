@@ -42,7 +42,7 @@ method("The register() method", () => {
   let activator: Activator;
   let broker: Broker;
   let taskHandler;
-  let on: Sinon.SinonSpy;
+  let on: sinon.SinonSpy;
   let factory: ExecutionContextFactory;
 
   lab.beforeEach(done => {

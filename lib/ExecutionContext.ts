@@ -41,7 +41,7 @@ export default class ExecutionContext<Request, Response> implements IContext<Req
       });
   }
 
-  public fail(error: Error, message) {
+  public fail(error: Error, message: Object) {
     this.broker.broadcast(this.taskHandler.failure, message)
       .finally(() => {
         return this.callback(error, null);

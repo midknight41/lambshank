@@ -28,7 +28,7 @@ method("broadcast()", () => {
 
   let sns: MockAws.SNS;
   let broker: AwsBroker;
-  let stub: Sinon.SinonSpy;
+  let stub: sinon.SinonSpy;
 
   lab.beforeEach(done => {
 
@@ -175,7 +175,7 @@ method("invoke()", () => {
 
   let lambda: MockAws.Lambda;
   let broker: AwsBroker;
-  let stub: Sinon.SinonSpy;
+  let stub: sinon.SinonSpy;
 
   lab.beforeEach(done => {
 

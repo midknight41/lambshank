@@ -10,5 +10,9 @@
   },
     "exclude": [
         "node_modules"
-    ]
+    ],
+  "lib": [
+    "es6",
+    "es2015.promise"
+  ]
 }
