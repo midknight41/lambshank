@@ -1,6 +1,8 @@
 import getConfig from "./ConfigManager";
 import { CoreFramework } from "./CoreFramework";
 import { thrower } from "check-verify";
+export * from "./Interfaces";
+
 let singleton = null;
 
 export function getCoreComponents(configFile: string): CoreFramework {
